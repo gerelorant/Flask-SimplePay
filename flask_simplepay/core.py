@@ -56,7 +56,6 @@ class SimplePay(object):
             __name__,
             url_prefix='/simple'
         )
-        self.app.register_blueprint(self.blueprint)
 
         @self.blueprint.route('/start/<int:transaction_id>', methods=['POST'])
         def start(transaction_id: int):
@@ -128,3 +127,5 @@ class SimplePay(object):
             response.headers['Signature'] = signature
             response.headers['Content-type'] = 'application/json'
             return response
+
+        self.app.register_blueprint(self.blueprint)
