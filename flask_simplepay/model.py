@@ -110,14 +110,14 @@ class TransactionMixin(fsa.Model):
 
     @property
     def _merchant(self):
-        if current_app.config['FLASK_ENV'] == 'production':
+        if current_app.config['ENV'] == 'production':
             return current_app.config.get('SIMPLE_MERCHANT')
         else:
             return 'PUBLICTESTHUF'
 
     @property
     def _secret_key(self):
-        if current_app.config['FLASK_ENV'] == 'production':
+        if current_app.config['ENV'] == 'production':
             return current_app.config.get('SIMPLE_KEY')
         else:
             return 'FxDa5w314kLlNseq2sKuVwaqZshZT5d6'
@@ -140,7 +140,7 @@ class TransactionMixin(fsa.Model):
         if language is None:
             language = 'HU'
 
-        if current_app.config.get('FLASK_ENV') == 'production':
+        if current_app.config.get('ENV') == 'production':
             url = 'https://api.simplepay.hu/payment/v2/start'
         else:
             url = 'https://sandbox.simplepay.hu/payment/v2/start'
@@ -170,7 +170,7 @@ class TransactionMixin(fsa.Model):
             'invoice': invoice,
             'delivery': delivery,
             'timeout': timeout,
-            'url': url_for('simple.back'),
+            'url': url_for('simple_pay.back'),
             'sdkVersion': current_app.config.get('SIMPLE_SDK', 'v1.0')
         }
 
