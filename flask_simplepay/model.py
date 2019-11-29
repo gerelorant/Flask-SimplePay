@@ -170,7 +170,7 @@ class TransactionMixin(fsa.Model):
             'invoice': invoice,
             'delivery': delivery,
             'timeout': timeout,
-            'url': url_for('simple_pay.back'),
+            'url': url_for('simple_pay.back', _external=True),
             'sdkVersion': current_app.config.get('SIMPLE_SDK', 'v1.0')
         }
 
