@@ -1,8 +1,10 @@
 import base64
 import datetime as dt
+import random
 import json
 
-from flask import Flask, Blueprint, abort, redirect, request, make_response
+from flask import Flask, Blueprint, abort, redirect, request, make_response, \
+    jsonify
 from flask_sqlalchemy import SQLAlchemy
 import iso8601
 import pytz
@@ -54,7 +56,7 @@ class SimplePay(object):
         self.blueprint = Blueprint(
             'simple_pay',
             __name__,
-            url_prefix='/simple'
+            url_prefix='/simple_pay'
         )
 
         @self.blueprint.route('/start/<int:transaction_id>', methods=['POST'])
@@ -72,8 +74,10 @@ class SimplePay(object):
                 customer_email=customer_email,
                 language=language
             )
-
-            return redirect(resp.get('url'))
+            if 'paymentUrl' in resp:
+                return redirect(resp['paymentUrl'])
+            else:
+                return jsonify(resp)
 
         @self.blueprint.route('/back')
         def back():
@@ -82,7 +86,7 @@ class SimplePay(object):
                 return abort(400)
 
             data = json.loads(base64.b64decode(response))
-            transaction = self.transaction_class.query.get(data.get('o'), 0)
+            transaction = self.transaction_class.query.get(data.get('o', 0))
 
             if transaction is None:
                 return abort(404)
@@ -129,3 +133,27 @@ class SimplePay(object):
             return response
 
         self.app.register_blueprint(self.blueprint)
+
+    def start_transaction(
+            self,
+            total: float,
+            language: str,
+            currency: str,
+            billing_address_id: int = None,
+            delivery_address_id: int = None,
+            user_id: int = None
+    ):
+        transaction = self.transaction_class()
+        transaction.id = random.randint(10**8, 10**9-1)
+        transaction.total = total
+        transaction.language = language
+        transaction.currency = currency
+        transaction.billing_address_id = billing_address_id
+        transaction.delivery_address_id = delivery_address_id
+
+        if user_id is not None:
+            transaction.user_id = user_id
+
+        self.db.session.add(transaction)
+        self.db.session.commit()
+        return transaction

@@ -17,13 +17,13 @@ class OrderAddressMixin(fsa.Model):
     __tablename__ = 'order_address'
 
     name = sa.Column(sa.String(80), nullable=False)
-    company = sa.Column(sa.String(80))
+    company = sa.Column(sa.String(80), default='')
     country= sa.Column(sa.String(2), nullable=False)
     state = sa.Column(sa.String(40))
     city = sa.Column(sa.String(80))
     zip = sa.Column(sa.String(12))
     address = sa.Column(sa.String(80))
-    address2 = sa.Column(sa.String(80))
+    address2 = sa.Column(sa.String(80), default='')
     phone = sa.Column(sa.String(16))
 
     @property
@@ -65,8 +65,7 @@ class TransactionMixin(fsa.Model):
     def billing_address_id(cls):
         return sa.Column(
             sa.Integer,
-            sa.ForeignKey('order_address.id'),
-            nullable=False
+            sa.ForeignKey('order_address.id')
         )
 
     @declared_attr
@@ -163,7 +162,7 @@ class TransactionMixin(fsa.Model):
             'customer': customer_name or self.user.name,
             'customerEmail': customer_email or self.user.email,
             'language': getattr(self.user, 'language', None) or language,
-            'currency': current_app.config.get('SIMPLE_CURRENCY', 'HUF'),
+            'currency': self.currency,
             'total': self.total,
             'salt': self._salt(),
             'methods': ['CARD'],
