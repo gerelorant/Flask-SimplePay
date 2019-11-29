@@ -73,7 +73,7 @@ class TransactionMixin(fsa.Model):
     def billing_address(cls):
         return relationship(
             'OrderAddress',
-            foreign_keys=['billing_address.id']
+            foreign_keys=[cls.billing_address_id]
         )
 
     @declared_attr
@@ -87,7 +87,7 @@ class TransactionMixin(fsa.Model):
     def delivery_address(cls):
         return relationship(
             'OrderAddress',
-            foreign_keys=['delivery_address.id']
+            foreign_keys=[cls.delivery_address_id]
         )
 
     @declared_attr
