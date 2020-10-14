@@ -150,11 +150,24 @@ class SimplePay(object):
     ):
         transaction = self.transaction_class()
         transaction.id = random.randint(10**8, 10**9-1)
+
         transaction.total = total
+
         transaction.language = language
         transaction.currency = currency
-        transaction.billing_address_id = billing_address_id
-        transaction.delivery_address_id = delivery_address_id
+
+        if billing_address_id:
+            transaction.billing_address_id = billing_address_id
+        else:
+            transaction.billing_address = billing_address
+
+        if delivery_address_id:
+            transaction.delivery_address_id = delivery_address_id
+        else:
+            transaction.delivery_address = delivery_address
+
+        transaction.merchant = merchant
+        transaction.secret_key = secret_key
 
         if user_id is not None:
             transaction.user_id = user_id
