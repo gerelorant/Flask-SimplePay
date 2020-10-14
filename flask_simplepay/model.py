@@ -61,6 +61,9 @@ class TransactionMixin(fsa.Model):
     status = sa.Column(sa.String(16), index=True)
     method = sa.Column(sa.String(16), index=True)
 
+    merchant = sa.Column(sa.String(32))
+    secret_key = sa.Column(sa.String(64))
+
     @declared_attr
     def billing_address_id(cls):
         return sa.Column(
@@ -110,20 +113,22 @@ class TransactionMixin(fsa.Model):
     @property
     def _merchant(self):
         if current_app.config['ENV'] == 'production':
-            return current_app.config.get('SIMPLE_MERCHANT')
+            return self.merchant or current_app.config.get('SIMPLE_MERCHANT')
         else:
             return 'PUBLICTESTHUF'
 
     @property
     def _secret_key(self):
         if current_app.config['ENV'] == 'production':
-            return current_app.config.get('SIMPLE_KEY')
+            return self.secret_key or current_app.config.get('SIMPLE_KEY')
         else:
             return 'FxDa5w314kLlNseq2sKuVwaqZshZT5d6'
 
-    def signature(self, data: bytes):
+    def signature(self, data: bytes, secret_key: str = None):
+        if secret_key is None:
+            secret_key = self._secret_key
         hash_ = hmac.new(
-            bytes(self._secret_key, 'utf8'),
+            bytes(secret_key, 'utf8'),
             data,
             hashlib.sha384
         ).digest()
@@ -174,7 +179,7 @@ class TransactionMixin(fsa.Model):
         }
 
         data = json.dumps(data).encode('utf8')
-        signature = self.signature(data)
+        signature = self.signature(data, self.secret_key)
 
         resp = requests.post(
             url=url,

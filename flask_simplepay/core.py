@@ -140,7 +140,11 @@ class SimplePay(object):
             language: str,
             currency: str,
             billing_address_id: int = None,
+            billing_address: OrderAddressMixin = None,
             delivery_address_id: int = None,
+            delivery_address: OrderAddressMixin = None,
+            merchant: str = None,
+            secret_key: str = None,
             user_id: int = None,
             **kwargs
     ):
