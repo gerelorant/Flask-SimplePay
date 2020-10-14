@@ -141,7 +141,8 @@ class SimplePay(object):
             currency: str,
             billing_address_id: int = None,
             delivery_address_id: int = None,
-            user_id: int = None
+            user_id: int = None,
+            **kwargs
     ):
         transaction = self.transaction_class()
         transaction.id = random.randint(10**8, 10**9-1)
@@ -153,6 +154,9 @@ class SimplePay(object):
 
         if user_id is not None:
             transaction.user_id = user_id
+
+        for k, v in kwargs.items():
+            setattr(transaction, k, v)
 
         self.db.session.add(transaction)
         self.db.session.commit()

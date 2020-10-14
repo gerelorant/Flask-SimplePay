@@ -12,7 +12,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
-translations = SimplePay(app, db)
+simple = SimplePay(app, db)
     
 
 if __name__ == '__main__':
