@@ -101,6 +101,7 @@ class SimplePay(object):
             event = data['e'].lower()
 
             transaction.result = event
+            transaction.simple_id = data.get('t', None)
             resp = transaction.back()
             self.db.session.commit()
 
