@@ -13,6 +13,10 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship, backref
 
 
+TEST_MERCHANT = 'PUBLICTESTHUF'
+TEST_KEY = 'FxDa5w314kLlNseq2sKuVwaqZshZT5d6'
+
+
 class OrderAddressMixin(fsa.Model):
     __tablename__ = 'order_address'
 
@@ -115,14 +119,14 @@ class TransactionMixin(fsa.Model):
         if current_app.config['ENV'] == 'production':
             return self.merchant or current_app.config.get('SIMPLE_MERCHANT')
         else:
-            return 'PUBLICTESTHUF'
+            return TEST_MERCHANT
 
     @property
     def _secret_key(self):
         if current_app.config['ENV'] == 'production':
             return self.secret_key or current_app.config.get('SIMPLE_KEY')
         else:
-            return 'FxDa5w314kLlNseq2sKuVwaqZshZT5d6'
+            return TEST_KEY
 
     def signature(self, data: bytes, secret_key: str = None):
         if secret_key is None:
@@ -144,7 +148,8 @@ class TransactionMixin(fsa.Model):
         if language is None:
             language = 'HU'
 
-        if current_app.config.get('ENV') == 'production':
+        if current_app.config.get('ENV') == 'production' \
+                and self.merchant != TEST_MERCHANT:
             url = 'https://api.simplepay.hu/payment/v2/start'
         else:
             url = 'https://sandbox.simplepay.hu/payment/v2/start'
