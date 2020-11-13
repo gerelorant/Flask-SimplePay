@@ -4,7 +4,7 @@ import random
 import json
 
 from flask import Flask, Blueprint, abort, redirect, request, make_response, \
-    jsonify
+    jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 import iso8601
 import pytz
@@ -69,15 +69,22 @@ class SimplePay(object):
             customer_name = request.values.get('name', None)
             customer_email = request.values.get('email', None)
 
-            resp = transaction.pay_with_simple(
-                customer_name=customer_name,
-                customer_email=customer_email,
-                language=language
-            )
+            try:
+                resp = transaction.pay_with_simple(
+                    customer_name=customer_name,
+                    customer_email=customer_email,
+                    language=language)
+            finally:
+                self.db.session.commit()
+
             if 'paymentUrl' in resp:
                 return redirect(resp['paymentUrl'])
             else:
-                return jsonify(resp)
+                errors = resp.get('errorCodes', [])
+                error_msg = 'Hiba' if transaction.language == 'HU' else 'Error'
+
+                flash(f'{error_msg}: {errors}')
+                return redirect(request.referrer)
 
         @self.blueprint.route('/back')
         def back():

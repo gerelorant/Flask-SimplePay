@@ -181,6 +181,8 @@ class TransactionMixin(fsa.Model):
         data = json.dumps(data).encode('utf8')
         signature = self.signature(data, self.secret_key)
 
+
+
         resp = requests.post(
             url=url,
             data=data,
