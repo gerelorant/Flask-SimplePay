@@ -143,14 +143,16 @@ class TransactionMixin(fsa.Model):
             self,
             customer_name: str = None,
             customer_email: str = None,
-            language: str = None
+            language: str = None,
+            test: bool = False
     ):
         if language is None:
             language = 'HU'
 
         if current_app.config.get('ENV') == 'production' \
+                and not test \
                 and self.merchant != TEST_MERCHANT:
-            url = 'https://api.simplepay.hu/payment/v2/start'
+            url = 'https://secure.simplepay.hu/payment/v2/start'
         else:
             url = 'https://sandbox.simplepay.hu/payment/v2/start'
 
