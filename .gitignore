@@ -1,0 +1,7 @@
+/.vscode/
+!/.vscode/launch.json
+/__pycache__/
+*.pyc
+config.json
+/dist/
+/Flask_SimplePay.egg-info/

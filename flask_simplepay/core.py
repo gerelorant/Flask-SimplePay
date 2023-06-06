@@ -2,6 +2,7 @@ import base64
 import datetime as dt
 import random
 import json
+import typing
 
 from flask import Flask, Blueprint, abort, redirect, request, make_response, \
     jsonify, flash
@@ -25,8 +26,8 @@ class SimplePay(object):
             self,
             app: Flask = None,
             db: SQLAlchemy = None,
-            transaction_class: type(TransactionMixin) = None,
-            address_class: type(OrderAddressMixin) = None
+            transaction_class: typing.Type[TransactionMixin] = None,
+            address_class: typing.Type[OrderAddressMixin] = None
     ):
         self.app = app
         self.db = db
@@ -61,6 +62,8 @@ class SimplePay(object):
 
         @self.blueprint.route('/start/<int:transaction_id>', methods=['POST'])
         def start(transaction_id: int):
+            test = request.args.get('test', False)
+
             transaction = self.transaction_class.query.get(transaction_id)
             if transaction is None:
                 return abort(404)
@@ -73,7 +76,8 @@ class SimplePay(object):
                 resp = transaction.pay_with_simple(
                     customer_name=customer_name,
                     customer_email=customer_email,
-                    language=language)
+                    language=language,
+                    test=test)
             finally:
                 self.db.session.commit()
 
