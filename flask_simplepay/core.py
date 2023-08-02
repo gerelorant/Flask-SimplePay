@@ -114,16 +114,16 @@ class SimplePay(object):
         @self.blueprint.route('/ipn', methods=['POST'])
         def ipn():
 
-            # addr = self.app.config.get('SIMPLE_HOST', '94.199.53.96')
-            # if request.remote_addr != addr:
-            #     return abort(403)
+            addr = self.app.config.get('SIMPLE_HOST', '94.199.53.96')
+            if request.remote_addr != addr:
+                return abort(403)
 
-            data = request.json
-            if json is None:
+            data = dict(request.json or request.values)
+            if data is None:
                 return abort(400)
 
             transaction = self.transaction_class.query\
-                .get(data.get('orderRef'), 0)
+                .get(data.get('orderRef', 0))
 
             if transaction is None:
                 return abort(404)
