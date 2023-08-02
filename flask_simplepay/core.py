@@ -1,5 +1,6 @@
 import base64
 import datetime as dt
+import logging
 import random
 import json
 import typing
@@ -11,6 +12,9 @@ import iso8601
 import pytz
 
 from flask_simplepay.model import TransactionMixin, OrderAddressMixin
+
+
+logger = logging.getLogger('simple_pay')
 
 
 class SimplePay(object):
@@ -62,6 +66,7 @@ class SimplePay(object):
 
         @self.blueprint.route('/start/<int:transaction_id>', methods=['POST'])
         def start(transaction_id: int):
+            logger.info(f'Starting transaction {transaction_id}...')
             test = request.args.get('test', False)
 
             transaction = self.transaction_class.query.get(transaction_id)
@@ -82,16 +87,19 @@ class SimplePay(object):
                 self.db.session.commit()
 
             if 'paymentUrl' in resp:
+                logger.info(f'Redirecting transaction {transaction_id}...')
                 return redirect(resp['paymentUrl'])
             else:
                 errors = resp.get('errorCodes', [])
                 error_msg = 'Hiba' if transaction.language == 'HU' else 'Error'
 
+                logger.info(f'Transaction {transaction_id} failed: {errors}')
                 flash(f'{error_msg}: {errors}')
                 return redirect(request.referrer)
 
         @self.blueprint.route('/back')
         def back():
+            logger.info(f'Back route called')
             response = request.args.get('r', None)
             if response is None:
                 return abort(400)
@@ -104,8 +112,12 @@ class SimplePay(object):
 
             event = data['e'].lower()
 
+
             transaction.result = event
             transaction.simple_id = data.get('t', None)
+
+            logger.info(f'Back for transaction {transaction.id} is {transaction.result}, simple ID: {transaction.simple_id}')
+
             resp = transaction.back()
             self.db.session.commit()
 
@@ -113,19 +125,23 @@ class SimplePay(object):
 
         @self.blueprint.route('/ipn', methods=['POST'])
         def ipn():
+            logger.info(f'IPN called...')
 
             addr = self.app.config.get('SIMPLE_HOST', '94.199.53.96')
             if request.remote_addr != addr:
+                logger.info(f'IPN called from unknown host')
                 return abort(403)
 
             data = dict(request.json or request.values)
             if data is None:
+                logger.info(f'IPN called without data')
                 return abort(400)
 
             transaction = self.transaction_class.query\
                 .get(data.get('orderRef', 0))
 
             if transaction is None:
+                logger.info(f'IPN called with unknown transaction')
                 return abort(404)
 
             transaction.method = data['method']
@@ -138,6 +154,9 @@ class SimplePay(object):
             data['receiveDate'] = dt.datetime.now().astimezone().isoformat()
 
             data = json.dumps(data).encode('utf8')
+
+            logger.info(f'IPN data: {data}')
+
             signature = transaction.signature(data)
 
             response = make_response(data)
