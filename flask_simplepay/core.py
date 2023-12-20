@@ -68,6 +68,8 @@ class SimplePay(object):
         def start(transaction_id: int):
             logger.info(f'Starting transaction {transaction_id}...')
             test = request.args.get('test', False)
+            if isinstance(test, str) and test.lower() == 'false':
+                test = False
 
             transaction = self.transaction_class.query.get(transaction_id)
             if transaction is None:
