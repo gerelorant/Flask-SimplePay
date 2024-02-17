@@ -163,27 +163,41 @@ class TransactionMixin(fsa.Model):
 
         invoice = self.billing_address.as_dict \
             if self.billing_address \
-            else {}
+            else None
         delivery = self.delivery_address.as_dict \
             if self.delivery_address \
-            else {}
+            else None
 
         data = {
             'merchant': self._merchant,
             'orderRef': str(getattr(self, 'id')),
-            'customer': customer_name or self.user.name,
-            'customerEmail': customer_email or self.user.email,
             'language': getattr(self.user, 'language', None) or language,
             'currency': self.currency,
             'total': self.total,
             'salt': self._salt(),
             'methods': ['CARD'],
-            'invoice': invoice,
-            'delivery': delivery,
             'timeout': timeout,
             'url': url_for('simple_pay.back', _external=True),
             'sdkVersion': current_app.config.get('SIMPLE_SDK', 'v1.0')
         }
+
+        name = customer_name or (self.user and self.user.name)
+        if name:
+            data['customer'] = name
+        
+        email = customer_email or (self.user and self.user.email)
+        if email:
+            data['customerEmail'] = email
+        else:
+            data['maySelectEmail'] = True
+
+        if invoice:
+            data['invoce'] = invoice
+        else:
+            data['maySelectInvoice'] = True
+        
+        if delivery:
+            data['delivery'] = delivery
 
         data = json.dumps(data).encode('utf8')
         signature = self.signature(data, self.secret_key)
