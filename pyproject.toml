@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Flask-SimplePay"
-version = "1.7"
+version = "1.8"
 authors = [
   { name="Gere Lóránt", email="gerelorant@gmail.com" },
 ]
@@ -16,6 +16,9 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+license = {
+  text = "MIT License"
+}
 
 [project.urls]
 "Homepage" = "https://github.com/gerelorant/Flask-SimplePay"
